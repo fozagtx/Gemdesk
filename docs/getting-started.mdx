@@ -1,0 +1,80 @@
+---
+title: Getting Started with Gemdesk
+description: Learn how to set up Gemdesk for your project and start generating autonomous documentation updates
+lastUpdated: 2024-01-26
+category: setup
+order: 1
+---
+
+# Getting Started with Gemdesk
+
+Welcome to Gemdesk! This guide will help you set up your AI-native help center that autonomously updates itself using Gemini 3.0.
+
+## What is Gemdesk?
+
+Gemdesk is an AI-powered documentation platform that:
+- **Automatically updates** documentation when your code changes
+- **Uses Gemini 3.0** for intelligent content generation
+- **Integrates with GitHub** for seamless workflow integration
+- **Generates screenshots** and visual documentation automatically
+
+## Quick Setup
+
+### 1. Connect Your GitHub Repository
+
+First, you'll need to connect your GitHub repository to Gemdesk:
+
+1. Go to your [Dashboard](/dashboard)
+2. Click **"Connect GitHub Repository"**
+3. Install the Gemdesk GitHub App
+4. Select the repositories you want to monitor
+
+### 2. Configure Your Documentation
+
+Set up your documentation structure:
+
+```bash
+# Create a docs directory in your repository
+mkdir docs
+
+# Add your first documentation file
+touch docs/api-reference.mdx
+```
+
+### 3. Enable Gem Agent
+
+The Gem agent will automatically:
+- Monitor your repository for changes
+- Analyze code updates for documentation impact
+- Generate updated documentation using Gemini 3.0
+- Create pull requests with documentation updates
+
+## How It Works
+
+### The Gem Agent Workflow
+
+1. **🔍 Audit**: Gem monitors your repository for code changes
+2. **🧠 Plan**: AI analyzes changes and plans documentation updates
+3. **✍️ Draft**: Gemini 3.0 generates updated documentation content
+4. **📸 Review**: Screenshots and visual assets are captured automatically
+5. **🚀 Commit**: Changes are committed to a new branch and PR is created
+
+### AI-Powered Features
+
+- **Thought Signatures**: See exactly how Gem reasons about your changes
+- **Multimodal Understanding**: Gem can process code, images, and videos
+- **Context Awareness**: Maintains understanding of your entire codebase
+- **Natural Language**: Documentation written in clear, user-friendly language
+
+## Next Steps
+
+- [Configure Your Repository](/docs/repository-setup)
+- [Customize Gem Agent Behavior](/docs/gem-configuration)
+- [Set Up Webhooks](/docs/webhook-setup)
+- [Manage Documentation Templates](/docs/templates)
+
+## Need Help?
+
+- Check our [FAQ](/docs/faq)
+- Join our [Discord Community](https://discord.gg/gemdesk)
+- Email us at [support@gemdesk.ai](mailto:support@gemdesk.ai)

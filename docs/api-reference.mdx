@@ -1,0 +1,256 @@
+---
+title: API Reference
+description: Complete API documentation for Gemdesk's REST API and webhook endpoints
+lastUpdated: 2024-01-26
+category: api
+order: 2
+---
+
+# API Reference
+
+Gemdesk provides a comprehensive REST API for managing your documentation projects and integrating with the Gem agent.
+
+## Authentication
+
+All API requests require authentication using your API key:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.gemdesk.ai/v1/projects
+```
+
+## Base URL
+
+```
+https://api.gemdesk.ai/v1
+```
+
+## Endpoints
+
+### Projects
+
+#### List Projects
+
+Get all projects for your organization.
+
+```http
+GET /projects
+```
+
+**Response:**
+
+```json
+{
+  "projects": [
+    {
+      "id": "proj_123",
+      "name": "My Web App",
+      "repositoryFullName": "myorg/webapp",
+      "isActive": true,
+      "lastSyncAt": "2024-01-26T10:00:00Z",
+      "createdAt": "2024-01-20T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Get Project
+
+Get details for a specific project.
+
+```http
+GET /projects/{id}
+```
+
+**Response:**
+
+```json
+{
+  "id": "proj_123",
+  "name": "My Web App",
+  "description": "Main web application",
+  "repositoryFullName": "myorg/webapp",
+  "repositoryId": 12345,
+  "defaultBranch": "main",
+  "isActive": true,
+  "lastSyncAt": "2024-01-26T10:00:00Z",
+  "createdAt": "2024-01-20T10:00:00Z"
+}
+```
+
+### Documentation Files
+
+#### List Documentation Files
+
+Get all documentation files for a project.
+
+```http
+GET /projects/{id}/docs
+```
+
+**Response:**
+
+```json
+{
+  "files": [
+    {
+      "id": "doc_456",
+      "filePath": "docs/api.mdx",
+      "fileName": "api.mdx",
+      "title": "API Documentation",
+      "lastGemUpdate": "2024-01-26T09:30:00Z",
+      "gemUpdateCount": 3,
+      "isPublished": true
+    }
+  ]
+}
+```
+
+#### Update Documentation File
+
+Trigger a documentation update for a specific file.
+
+```http
+POST /projects/{id}/docs/{fileId}/update
+```
+
+**Request Body:**
+
+```json
+{
+  "reason": "API endpoint changes in commit abc123",
+  "priority": "high"
+}
+```
+
+### Gem Agent
+
+#### Trigger Gem Execution
+
+Manually trigger the Gem agent for a project.
+
+```http
+POST /projects/{id}/gem/execute
+```
+
+**Request Body:**
+
+```json
+{
+  "triggeredBy": "manual",
+  "triggerData": {
+    "commits": [
+      {
+        "id": "abc123",
+        "message": "Add new API endpoint",
+        "files": ["src/api/users.ts", "src/types/user.ts"]
+      }
+    ]
+  }
+}
+```
+
+**Response:**
+
+```json
+{
+  "executionId": "exec_789",
+  "status": "pending",
+  "phase": "audit"
+}
+```
+
+#### Get Gem Execution Status
+
+Check the status of a Gem execution.
+
+```http
+GET /gem/executions/{executionId}
+```
+
+**Response:**
+
+```json
+{
+  "id": "exec_789",
+  "status": "completed",
+  "phase": "commit",
+  "thoughtSignature": {
+    "thought": "The new user endpoint requires documentation updates",
+    "action": "Update API documentation with new endpoint details",
+    "confidence": 0.95,
+    "requirements": ["Update API reference", "Add usage examples"]
+  },
+  "results": {
+    "updatedFiles": ["docs/api-reference.mdx"],
+    "commitHash": "def456",
+    "pullRequestUrl": "https://github.com/myorg/webapp/pull/42"
+  }
+}
+```
+
+## Webhooks
+
+### GitHub Webhook
+
+Gemdesk automatically sets up webhooks for your connected repositories. The webhook endpoint is:
+
+```
+POST https://api.gemdesk.ai/v1/github/webhook
+```
+
+**Supported Events:**
+- `push` - Triggers documentation analysis
+- `pull_request` - Handles documentation PR reviews
+- `installation` - Manages app installations
+
+### Custom Webhooks
+
+You can also register custom webhooks to receive notifications:
+
+```http
+POST /webhooks
+```
+
+**Request Body:**
+
+```json
+{
+  "url": "https://yourapp.com/webhook",
+  "events": ["execution.completed", "documentation.updated"],
+  "secret": "your-webhook-secret"
+}
+```
+
+## Rate Limits
+
+- **Standard Plan**: 1000 requests per hour
+- **Pro Plan**: 10,000 requests per hour
+- **Enterprise Plan**: Custom limits
+
+## Error Handling
+
+The API uses conventional HTTP response codes:
+
+- `200` - Success
+- `400` - Bad Request
+- `401` - Unauthorized
+- `403` - Forbidden
+- `404` - Not Found
+- `429` - Rate Limited
+- `500` - Internal Server Error
+
+**Error Response Format:**
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid project ID",
+    "details": {
+      "field": "projectId",
+      "value": "invalid"
+    }
+  }
+}
+```

@@ -1,0 +1,233 @@
+---
+title: Understanding the Gem Agent
+description: Deep dive into how Gemdesk's AI agent works to autonomously update your documentation
+lastUpdated: 2024-01-26
+category: concepts
+order: 3
+---
+
+# Understanding the Gem Agent
+
+The Gem agent is the heart of Gemdesk - an autonomous AI system powered by Gemini 3.0 that keeps your documentation synchronized with your codebase.
+
+## How Gem Works
+
+### The Five-Phase Workflow
+
+#### 1. 🔍 **Audit Phase**
+Gem continuously monitors your repository for changes:
+
+- **Webhook Integration**: Receives real-time notifications from GitHub
+- **Diff Analysis**: Analyzes code changes using Git diffs
+- **Impact Assessment**: Determines which changes might affect documentation
+- **Thought Signatures**: Generates transparent reasoning about the changes
+
+```typescript
+// Example: Gem detects this new API endpoint
+export async function getUserProfile(userId: string) {
+  // New endpoint that needs documentation
+  return await db.users.findById(userId);
+}
+```
+
+#### 2. 🧠 **Plan Phase**
+Gem creates a structured plan for documentation updates:
+
+- **File Mapping**: Identifies which documentation files need updates
+- **Change Prioritization**: Assigns priority levels (high, medium, low)
+- **Resource Planning**: Determines what screenshots or assets are needed
+- **Validation Strategy**: Plans how to verify the updates
+
+```json
+{
+  "thought": "New API endpoint getUserProfile requires documentation",
+  "action": "Update API reference with endpoint details",
+  "confidence": 0.92,
+  "requirements": [
+    "Add endpoint to API reference",
+    "Include request/response examples",
+    "Update authentication section"
+  ],
+  "priority": "high"
+}
+```
+
+#### 3. ✍️ **Draft Phase**
+Gem generates the actual documentation content:
+
+- **Context-Aware Writing**: Uses full codebase context for accurate content
+- **MDX Generation**: Creates properly formatted MDX with frontmatter
+- **Code Examples**: Includes relevant code snippets and usage examples
+- **Cross-References**: Maintains links between related documentation
+
+#### 4. 📸 **Review Phase**
+Gem captures visual assets and validates content:
+
+- **Automated Screenshots**: Captures UI changes using Playwright
+- **Annotation Generation**: Adds helpful callouts and highlights
+- **Content Validation**: Checks for accuracy and completeness
+- **Quality Scoring**: Assigns quality scores to generated content
+
+#### 5. 🚀 **Commit Phase**
+Gem creates and manages the update process:
+
+- **Branch Creation**: Creates feature branches for documentation updates
+- **Git Operations**: Commits changes with descriptive messages
+- **Pull Request**: Creates PRs with detailed descriptions
+- **Merge Strategy**: Handles auto-merging based on confidence levels
+
+## Advanced Capabilities
+
+### Thought Signatures
+
+Gem's "Thought Signatures" provide transparency into the AI's reasoning:
+
+```typescript
+interface ThoughtSignature {
+  thought: string;        // Gem's reasoning process
+  action: string;         // Planned action
+  confidence: number;     // Confidence level (0-1)
+  requirements: string[]; // What's needed to complete the action
+  priority: 'low' | 'medium' | 'high';
+}
+```
+
+### Multimodal Understanding
+
+Gem can process multiple types of content:
+
+- **Code Analysis**: TypeScript, JavaScript, Python, Go, and more
+- **UI Screenshots**: Understands visual changes in interfaces
+- **Video Processing**: Can analyze demo videos for feature documentation
+- **Image Recognition**: Processes diagrams and visual assets
+
+### Context Preservation
+
+Gem maintains context across your entire project:
+
+- **2M+ Token Window**: Can process large codebases in a single context
+- **Cross-File Understanding**: Tracks relationships between files
+- **Historical Awareness**: Understands previous documentation decisions
+- **Consistency Maintenance**: Keeps writing style and structure consistent
+
+## Configuration Options
+
+### Triggering Conditions
+
+Control when Gem activates:
+
+```yaml
+# .gemdesk.yml
+triggers:
+  - file_patterns: ['src/api/**/*.ts', 'components/**/*.tsx']
+  - ignore_patterns: ['**/*.test.ts', '**/node_modules/**']
+  - branch_filters: ['main', 'develop']
+  - commit_keywords: ['feat:', 'fix:', 'breaking:']
+```
+
+### Documentation Templates
+
+Customize Gem's output format:
+
+```yaml
+templates:
+  api_endpoint:
+    frontmatter:
+      category: 'api'
+      order: 'auto'
+    sections:
+      - 'Description'
+      - 'Parameters'
+      - 'Response'
+      - 'Examples'
+      - 'Error Codes'
+```
+
+### Quality Thresholds
+
+Set minimum quality standards:
+
+```yaml
+quality:
+  minimum_confidence: 0.8
+  require_examples: true
+  auto_merge_threshold: 0.95
+  human_review_below: 0.7
+```
+
+## Monitoring Gem
+
+### Execution Tracking
+
+Monitor Gem's work through the dashboard:
+
+- **Real-time Status**: See current phase and progress
+- **Execution History**: View past runs and their outcomes
+- **Performance Metrics**: Track success rates and timing
+- **Error Logs**: Detailed error information when things go wrong
+
+### Quality Metrics
+
+Track documentation quality improvements:
+
+- **Coverage**: Percentage of code covered by documentation
+- **Freshness**: How recently documentation was updated
+- **Accuracy**: Validation scores from Gem's analysis
+- **User Engagement**: Analytics from your help center
+
+## Best Practices
+
+### Repository Structure
+
+Organize your repository for optimal Gem performance:
+
+```
+your-repo/
+├── docs/           # Dedicated documentation directory
+├── src/           # Source code
+├── .gemdesk.yml   # Gem configuration
+└── README.md      # Project overview
+```
+
+### Documentation Conventions
+
+Follow these patterns for best results:
+
+1. **Consistent Naming**: Use descriptive, consistent file names
+2. **Clear Frontmatter**: Include relevant metadata in MDX files
+3. **Logical Structure**: Organize docs by feature or API area
+4. **Example-Rich**: Include plenty of code examples
+
+### Git Workflow Integration
+
+Gem works best with standard Git workflows:
+
+- **Feature Branches**: Gem creates branches for documentation updates
+- **Pull Request Reviews**: Review and approve Gem's changes
+- **Merge Strategies**: Configure auto-merge for high-confidence updates
+- **Release Notes**: Gem can help maintain changelogs and release docs
+
+## Troubleshooting
+
+### Common Issues
+
+**Gem Not Triggering**
+- Check webhook configuration
+- Verify file patterns in `.gemdesk.yml`
+- Review GitHub App permissions
+
+**Low Quality Output**
+- Improve code comments and documentation
+- Add more context in commit messages
+- Adjust quality thresholds
+
+**Merge Conflicts**
+- Keep documentation files simple
+- Avoid manual edits to Gem-managed files
+- Use consistent formatting
+
+### Getting Help
+
+- View execution logs in the dashboard
+- Check the [FAQ](/docs/faq) for common solutions
+- Contact support with execution IDs for specific issues
