@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GitBranch, Users, Settings, Plus, Activity } from 'lucide-react';
 import { GitHubConnectionWizard } from './GitHubConnectionWizard';
+import { GradientButton } from '@/components/ui/export-button';
 import { ProjectList } from './ProjectList';
 import { MemberManagement } from './MemberManagement';
 import { AuditResults } from '@/components/audit/AuditResults';
@@ -22,8 +23,9 @@ interface OrganizationStats {
 }
 
 export function OrganizationDashboard() {
-  const { organization, isLoaded } = useOrganization();
-  const { user } = useUser();
+  const [user, setUser] = useState<any>(null);
+  const [organization, setOrganization] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showGitHubWizard, setShowGitHubWizard] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'audit'>('dashboard');
   const [stats, setStats] = useState<OrganizationStats>({
@@ -33,10 +35,58 @@ export function OrganizationDashboard() {
     gemExecutions: 0,
   });
 
-  if (!isLoaded) {
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        // Get user's organizations (simplified - get first one for now)
+        // In a real app, you'd have proper organization selection
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organizations(*)')
+          .eq('user_id', user.id)
+          .single();
+
+        if (orgMember?.organizations) {
+          setOrganization(orgMember.organizations);
+        }
+      }
+      setLoading(false);
+    };
+
+    getUser();
+  }, [supabase]);
+
+  if (loading) {
     return (
       <DashboardLayout>
-        <div className="p-6">Loading organization...</div>
+        <div className="p-6">Loading...</div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64 p-6">
+          <Card className="w-96">
+            <CardHeader>
+              <CardTitle>Not Authenticated</CardTitle>
+              <CardDescription>
+                Please sign in to access Gemdesk.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => window.location.href = '/auth/login'}>
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </DashboardLayout>
     );
   }
@@ -78,7 +128,7 @@ export function OrganizationDashboard() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={organization.imageUrl} alt={organization.name} />
+            <AvatarImage src={organization.avatarUrl} alt={organization.name} />
             <AvatarFallback>
               {organization.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
@@ -90,10 +140,10 @@ export function OrganizationDashboard() {
             </p>
           </div>
         </div>
-        <Button onClick={() => setShowGitHubWizard(true)} className="space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Connect Repository</span>
-        </Button>
+        <GradientButton onClick={() => setShowGitHubWizard(true)}>
+          <Plus className="h-4 w-4 z-50" />
+          <span className="text-[0.875rem] z-50">Connect Repository</span>
+        </GradientButton>
       </div>
 
       {/* Stats Cards */}
@@ -216,12 +266,10 @@ export function OrganizationDashboard() {
                     <p className="text-sm font-medium">Latest Audit Available</p>
                     <p className="text-xs text-gray-600">79 recommendations found from recent conversations</p>
                   </div>
-                  <Button
-                    onClick={() => setCurrentView('audit')}
-                    size="sm"
-                  >
-                    View Audit
-                  </Button>
+                  <GradientButton onClick={() => setCurrentView('audit')}>
+                    <Activity className="h-4 w-4 z-50" />
+                    <span className="text-[0.875rem] z-50">View Audit</span>
+                  </GradientButton>
                 </div>
                 <div className="text-center text-muted-foreground py-8">
                   No recent activity. Connect a repository to get started.

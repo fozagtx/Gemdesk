@@ -2,15 +2,14 @@
 
 > **Autonomous documentation that keeps itself up-to-date with Gemini 3.0**
 
-Gemdesk is an AI-powered documentation platform that automatically updates your help center when your code changes. Built with Next.js 15, PostgreSQL, Clerk, and Gemini 3.0, it provides enterprise-grade autonomous documentation management.
+Gemdesk is an AI-powered documentation platform that automatically updates your help center when your code changes. Built with Next.js 15, PostgreSQL, Supabase, and Gemini 3.0, it provides enterprise-grade autonomous documentation management.
 
 ## Features
 
 - **Autonomous Updates**: Gem agent automatically updates docs when code changes
 - **Gemini 3.0 Powered**: Advanced AI with 2M+ token context and multimodal understanding
 - **GitHub Integration**: Seamless webhook-driven workflow with GitHub App
-- **Smart Screenshots**: Automated UI capture with intelligent annotations
-- **Multi-tenancy**: Organization-level management with Clerk authentication
+- **Multi-tenancy**: Organization-level management with Supabase authentication
 - **Real-time**: Live updates and streaming AI responses
 - **MDX Support**: Rich documentation with React components
 
@@ -19,10 +18,9 @@ Gemdesk is an AI-powered documentation platform that automatically updates your 
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL database
+- Supabase account (provides both auth and database)
 - GitHub repository
 - Google Cloud account (for Gemini 3.0)
-- Clerk account
 
 ### 1. Clone and Install
 
@@ -43,12 +41,11 @@ cp .env.example .env.local
 **Required Environment Variables:**
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/gemdesk
-
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
+# Supabase (handles both auth and database)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
 
 # Gemini 3.0
 GOOGLE_GENERATIVE_AI_API_KEY=AIzaSyxxxxx
@@ -64,20 +61,26 @@ GITHUB_WEBHOOK_SECRET=your-webhook-secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### 3. Database Setup
+### 3. Supabase Setup
+
+1. Create a new project at https://supabase.com
+2. Get your project URL and API keys from Settings > API
+3. Update your `.env.local` with Supabase credentials
+
+### 4. Database Setup
 
 ```bash
-# Generate database schema
+# Generate database schema for Supabase
 bun run db:generate
 
-# Run migrations
+# Run migrations to Supabase
 bun run db:migrate
 
-# (Optional) View database
+# (Optional) View database in Supabase dashboard or Drizzle Studio
 bun run db:studio
 ```
 
-### 4. GitHub App Setup
+### 5. GitHub App Setup
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/apps/new)
 2. Create a new GitHub App with these settings:
@@ -92,7 +95,7 @@ bun run db:studio
 3. Generate and download private key
 4. Install the app on your target repositories
 
-### 5. Start Development
+### 6. Start Development
 
 ```bash
 bun run dev
@@ -107,7 +110,7 @@ Visit [http://localhost:3000](http://localhost:3000) to access Gemdesk.
 - **Frontend**: Next.js 15 (App Router) + TypeScript
 - **Styling**: Tailwind CSS + Shadcn UI + Framer Motion
 - **Database**: PostgreSQL + Drizzle ORM
-- **Authentication**: Clerk (multi-tenant)
+- **Authentication**: Supabase (multi-tenant)
 - **AI**: Gemini 3.0 Pro/Flash via Google AI SDK
 - **Git Integration**: GitHub App + Simple Git
 - **Background Jobs**: Inngest
@@ -205,9 +208,10 @@ bun run test:watch    # Watch mode
 # Production Database (use Neon, Supabase, or PlanetScale)
 DATABASE_URL=postgresql://prod-connection-string
 
-# Clerk Production Keys
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
-CLERK_SECRET_KEY=sk_live_xxxxx
+# Supabase Production Keys
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-production-service-role-key
 
 # Production GitHub App
 GITHUB_APP_ID=prod-app-id

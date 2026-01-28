@@ -17,7 +17,6 @@ export interface UpdatePlan {
     reason: string;
     priority: 'high' | 'medium' | 'low';
   }>;
-  screenshots: string[];
 }
 
 export class DocumentationUpdater {
@@ -59,8 +58,7 @@ export class DocumentationUpdater {
     const documentationFiles = await this.scanDocumentationFiles();
     const plan: UpdatePlan = {
       files: documentationFiles,
-      changes: [],
-      screenshots: []
+      changes: []
     };
 
     for (const change of codeChanges) {

@@ -75,33 +75,6 @@ export class GeminiAgent {
     return updatedContent;
   }
 
-  async generateScreenshotInstructions(
-    uiChanges: string[],
-    stagingUrl: string
-  ): Promise<string[]> {
-    const { object } = await generateObject({
-      model: this.flashModel,
-      schema: z.object({
-        instructions: z.array(z.string())
-      }),
-      prompt: `
-        Generate Playwright instructions for capturing annotated screenshots:
-
-        UI Changes:
-        ${uiChanges.join('\n')}
-
-        Staging URL: ${stagingUrl}
-
-        Provide step-by-step instructions for capturing screenshots that highlight:
-        1. New UI components
-        2. Changed layouts
-        3. Updated interactions
-        4. Feature demonstrations
-      `,
-    });
-
-    return object.instructions;
-  }
 
   async validateDocumentationUpdate(
     originalContent: string,
