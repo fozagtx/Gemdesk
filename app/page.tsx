@@ -1,4 +1,4 @@
-import { LandingPage } from '../components/landing/LandingPage';
+import { LandingPage } from '../landing/page';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

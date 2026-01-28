@@ -1,11 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { GradientButton } from '@/components/ui/export-button';
-import Header from '../header/Header';
-import { Footer } from '../footer/Footer';
-import { Hero } from '../hero/Hero';
-import { CursorEffects } from '../cursor-effects/CursorEffects';
+import { Button } from '../src/components/ui/button';
+import { GradientButton } from '../src/components/ui/export-button';
+import Header from '../components/header';
+import { Footer } from '../components/footer';
+import { Hero } from '../components/hero';
+import { CursorEffects } from '../components/cursor-effects';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 

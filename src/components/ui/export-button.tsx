@@ -15,7 +15,7 @@ const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
         ref={ref}
         type="button"
         className={cn(
-          "flex items-center gap-1.5 text-white rounded-md px-[0.12rem] py-[0.12rem] transition-all duration-200",
+          "flex items-center justify-center gap-2 text-white rounded-md px-1 py-1 transition-all duration-200",
           disabled
             ? "cursor-not-allowed opacity-50"
             : "cursor-pointer hover:brightness-95",
@@ -30,7 +30,7 @@ const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
             <div className="absolute w-[calc(100%-2px)] h-[calc(100%-2px)] top-[0.08rem] left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#2567EC] to-[#37B6F7] rounded-[0.8rem]"></div>
           </div>
           {/* Content wrapper to ensure it stays above overlays */}
-          <div className="relative z-50 flex items-center justify-center">
+          <div className="relative z-50 flex items-center justify-center gap-2 px-4 py-2">
             {children}
           </div>
         </div>
