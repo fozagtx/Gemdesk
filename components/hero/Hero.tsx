@@ -3,7 +3,7 @@
 import { Button } from "../../src/components/ui/button";
 import { GradientButton } from "../../src/components/ui/export-button";
 import { DocumentationCard } from "./DocumentationCard";
-import { ArrowRight, GitBranch } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function Hero() {
@@ -27,18 +27,19 @@ export function Hero() {
 
             <p className="text-base sm:text-xl text-gray-600 font-light tracking-wide max-w-xl mb-8 mx-auto lg:mx-0">
               Autonomous documentation that keeps itself up-to-date with Gemini 3.0.
-              Connect your repositories and let AI handle the rest.
             </p>
 
             <div className="flex gap-4 justify-center lg:justify-start items-center flex-wrap mb-12">
               <Link href="/dashboard">
-                <GradientButton className="px-8 py-4 w-64 h-14">
-                  <span className="text-base font-semibold z-50 whitespace-nowrap flex items-center gap-2">
-                    <GitBranch className="h-4 w-4" />
-                    Start Building
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                </GradientButton>
+                <div className="relative">
+                  <GradientButton className="px-8 py-4 w-64 h-14">
+                    <span className="text-base font-semibold z-50 whitespace-nowrap flex items-center gap-2">
+                      Start Free
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </GradientButton>
+                  <p className="text-sm text-gray-500 text-center mt-2">(no credit card required)</p>
+                </div>
               </Link>
 
               <Link href="/auth/login">
@@ -56,7 +57,9 @@ export function Hero() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto lg:mx-0">
               <div className="text-center lg:text-left">
                 <div className="w-10 h-10 mx-auto lg:mx-0 mb-3 bg-gradient-to-br from-[#2567EC] to-[#37B6F7] rounded-xl flex items-center justify-center">
-                  <GitBranch className="h-5 w-5 text-white" />
+                  <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-1 text-sm">GitHub Integration</h3>
                 <p className="text-xs text-gray-600">Connect repositories and sync automatically</p>

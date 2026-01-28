@@ -13,6 +13,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Gemdesk - AI-Powered Documentation Assistant",
   description: "Automated documentation management with AI",
+  icons: {
+    icon: "/gem.png",
+    shortcut: "/gem.png",
+    apple: "/gem.png",
+  },
 };
 
 export default function RootLayout({
