@@ -36,14 +36,14 @@ export default function LoginPage() {
           setMessage('Check your email for the confirmation link!');
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
           setMessage(error.message);
-        } else {
+        } else if (data.user) {
           router.push('/dashboard');
         }
       }

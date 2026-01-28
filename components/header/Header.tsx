@@ -66,7 +66,7 @@ export default function Header() {
             ) : (
               <Link href="/auth/login">
                 <GradientButton className="px-6 py-3">
-                  <span className="text-base font-semibold">Sign In</span>
+                  <span className="text-base font-medium">Sign In</span>
                 </GradientButton>
               </Link>
             )}
@@ -124,8 +124,8 @@ export default function Header() {
                   </div>
                 ) : (
                   <Link href="/auth/login" className="block">
-                    <GradientButton className="w-full py-3">
-                      <span className="text-base font-semibold">Sign In</span>
+                    <GradientButton className="w-full px-6 py-3">
+                      <span className="text-base font-medium">Sign In</span>
                     </GradientButton>
                   </Link>
                 )}

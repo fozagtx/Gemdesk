@@ -32,10 +32,10 @@ export function Hero() {
             <div className="flex gap-4 justify-center lg:justify-start items-center flex-wrap mb-12">
               <Link href="/dashboard">
                 <div className="relative">
-                  <GradientButton className="px-8 py-4 w-64 h-14">
-                    <span className="text-base font-semibold z-50 whitespace-nowrap flex items-center gap-2">
+                  <GradientButton className="px-10 py-5">
+                    <span className="text-xl font-semibold z-50 whitespace-nowrap flex items-center gap-2">
                       Start Free
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-5 w-5" />
                     </span>
                   </GradientButton>
                   <p className="text-sm text-gray-500 text-center mt-2">(no credit card required)</p>
@@ -45,8 +45,7 @@ export function Hero() {
               <Link href="/auth/login">
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="w-48"
+                  className="rounded-sm px-10 py-5 text-xl"
                 >
                   View Demo
                 </Button>
