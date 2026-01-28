@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { GitBranch, FileText, Zap } from 'lucide-react';
 
 interface Cursor {
@@ -10,7 +10,7 @@ interface Cursor {
   user: string;
   color: string;
   action: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   isAI: boolean;
 }
 

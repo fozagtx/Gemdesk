@@ -247,11 +247,13 @@ export class GitHubApp {
         installation_id: installationId,
       });
 
+      const account = data.account as any;
+
       return {
         id: data.id,
         account: {
-          login: data.account?.login || '',
-          type: data.account?.type || '',
+          login: account?.login || account?.name || '',
+          type: account?.type || '',
         },
         permissions: data.permissions as Record<string, string>,
       };

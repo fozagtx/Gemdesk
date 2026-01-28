@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOrganization } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +55,6 @@ interface MemberManagementProps {
 }
 
 export function MemberManagement({ organizationId }: MemberManagementProps) {
-  const { organization } = useOrganization();
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');

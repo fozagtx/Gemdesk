@@ -1,21 +1,23 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/database/connection';
-import { gemExecutions, projects, organizations } from '@/lib/database/schema';
+import { gemExecutions, projects, organizations, users } from '@/lib/database/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
-    const { userId, orgId } = await auth();
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
 
-    let query = db
+    // Get all executions with projects
+    const executionsList = await db
       .select({
         id: gemExecutions.id,
         projectId: gemExecutions.projectId,
@@ -30,27 +32,8 @@ export async function GET(request: Request) {
         results: gemExecutions.results,
       })
       .from(gemExecutions)
-      .innerJoin(projects, eq(gemExecutions.projectId, projects.id));
-
-    // Filter by project if specified
-    if (projectId) {
-      query = query.where(eq(gemExecutions.projectId, projectId));
-    }
-
-    // If orgId is present, filter by organization
-    if (orgId) {
-      const [organization] = await db
-        .select()
-        .from(organizations)
-        .where(eq(organizations.clerkOrgId, orgId))
-        .limit(1);
-
-      if (organization) {
-        query = query.where(eq(projects.organizationId, organization.id));
-      }
-    }
-
-    const executionsList = await query
+      .innerJoin(projects, eq(gemExecutions.projectId, projects.id))
+      .where(projectId ? eq(gemExecutions.projectId, projectId) : undefined)
       .orderBy(desc(gemExecutions.startedAt))
       .limit(100);
 

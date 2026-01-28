@@ -104,12 +104,18 @@ export class CommitManager {
 
   async pushChanges(branch?: string, force: boolean = false): Promise<void> {
     try {
-      const pushOptions = force ? ['--force'] : [];
-
       if (branch) {
-        await this.git.push('origin', branch, pushOptions);
+        if (force) {
+          await this.git.push('origin', branch, ['--force']);
+        } else {
+          await this.git.push('origin', branch);
+        }
       } else {
-        await this.git.push('origin', pushOptions);
+        if (force) {
+          await this.git.push(['origin', '--force']);
+        } else {
+          await this.git.push();
+        }
       }
     } catch (error) {
       console.error('Error pushing changes:', error);

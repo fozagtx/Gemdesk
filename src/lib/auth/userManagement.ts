@@ -1,14 +1,13 @@
-import { currentUser } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/database/connection';
-import { users, organizations, type NewUser, type NewOrganization } from '@/lib/database/schema';
-import { eq } from 'drizzle-orm';
+import { users, organizations, organizationMembers, type NewUser, type NewOrganization } from '@/lib/database/schema';
+import { eq, and } from 'drizzle-orm';
 
 export interface UserWithOrg {
   id: string;
-  clerkId: string;
   email: string;
-  name: string | null;
-  imageUrl: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
   organization?: {
     id: string;
     name: string;
@@ -17,20 +16,40 @@ export interface UserWithOrg {
 }
 
 export async function getCurrentUserWithOrg(): Promise<UserWithOrg | null> {
-  const clerkUser = await currentUser();
+  const supabase = await createClient();
+  const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
 
-  if (!clerkUser) {
+  if (error || !supabaseUser) {
     return null;
   }
 
   // Get or create user in database
-  const dbUser = await getOrCreateUser(clerkUser);
+  const dbUser = await getOrCreateUser(supabaseUser);
 
   // Get user's organization if they have one
+  const membership = await db
+    .select({
+      organizationId: organizationMembers.organizationId,
+    })
+    .from(organizationMembers)
+    .where(eq(organizationMembers.userId, dbUser.id))
+    .limit(1);
+
   let organization;
-  if (clerkUser.organizationMemberships?.[0]) {
-    const orgMembership = clerkUser.organizationMemberships[0];
-    organization = await getOrCreateOrganization(orgMembership.organization);
+  if (membership.length > 0) {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, membership[0].organizationId))
+      .limit(1);
+
+    if (org) {
+      organization = {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+      };
+    }
   }
 
   return {
@@ -39,14 +58,13 @@ export async function getCurrentUserWithOrg(): Promise<UserWithOrg | null> {
   };
 }
 
-export async function getOrCreateUser(clerkUser: any): Promise<{
+export async function getOrCreateUser(supabaseUser: any): Promise<{
   id: string;
-  clerkId: string;
   email: string;
-  name: string | null;
-  imageUrl: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
 }> {
-  const email = clerkUser.emailAddresses[0]?.emailAddress;
+  const email = supabaseUser.email;
 
   if (!email) {
     throw new Error('User must have an email address');
@@ -56,23 +74,26 @@ export async function getOrCreateUser(clerkUser: any): Promise<{
   const existingUser = await db
     .select()
     .from(users)
-    .where(eq(users.clerkId, clerkUser.id))
+    .where(eq(users.id, supabaseUser.id))
     .limit(1);
 
   if (existingUser.length > 0) {
     // Update user info if needed
     const user = existingUser[0];
+    const fullName = supabaseUser.user_metadata?.full_name || null;
+    const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
+
     if (
       user.email !== email ||
-      user.name !== clerkUser.fullName ||
-      user.imageUrl !== clerkUser.imageUrl
+      user.fullName !== fullName ||
+      user.avatarUrl !== avatarUrl
     ) {
       await db
         .update(users)
         .set({
           email,
-          name: clerkUser.fullName,
-          imageUrl: clerkUser.imageUrl,
+          fullName,
+          avatarUrl,
           updatedAt: new Date(),
         })
         .where(eq(users.id, user.id));
@@ -80,8 +101,8 @@ export async function getOrCreateUser(clerkUser: any): Promise<{
       return {
         ...user,
         email,
-        name: clerkUser.fullName,
-        imageUrl: clerkUser.imageUrl,
+        fullName,
+        avatarUrl,
       };
     }
 
@@ -90,73 +111,15 @@ export async function getOrCreateUser(clerkUser: any): Promise<{
 
   // Create new user
   const newUser: NewUser = {
-    id: clerkUser.id,
-    clerkId: clerkUser.id,
+    id: supabaseUser.id,
     email,
-    name: clerkUser.fullName || null,
-    imageUrl: clerkUser.imageUrl || null,
+    fullName: supabaseUser.user_metadata?.full_name || null,
+    avatarUrl: supabaseUser.user_metadata?.avatar_url || null,
   };
 
   const created = await db
     .insert(users)
     .values(newUser)
-    .returning();
-
-  return created[0];
-}
-
-export async function getOrCreateOrganization(clerkOrg: any): Promise<{
-  id: string;
-  name: string;
-  slug: string;
-}> {
-  // Check if organization exists
-  const existingOrg = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.clerkOrgId, clerkOrg.id))
-    .limit(1);
-
-  if (existingOrg.length > 0) {
-    const org = existingOrg[0];
-
-    // Update organization info if needed
-    if (
-      org.name !== clerkOrg.name ||
-      org.slug !== clerkOrg.slug ||
-      org.imageUrl !== clerkOrg.imageUrl
-    ) {
-      await db
-        .update(organizations)
-        .set({
-          name: clerkOrg.name,
-          slug: clerkOrg.slug,
-          imageUrl: clerkOrg.imageUrl,
-          updatedAt: new Date(),
-        })
-        .where(eq(organizations.id, org.id));
-
-      return {
-        ...org,
-        name: clerkOrg.name,
-        slug: clerkOrg.slug,
-      };
-    }
-
-    return org;
-  }
-
-  // Create new organization
-  const newOrg: NewOrganization = {
-    clerkOrgId: clerkOrg.id,
-    name: clerkOrg.name,
-    slug: clerkOrg.slug,
-    imageUrl: clerkOrg.imageUrl || null,
-  };
-
-  const created = await db
-    .insert(organizations)
-    .values(newOrg)
     .returning();
 
   return created[0];
@@ -187,19 +150,36 @@ export async function checkUserPermission(
   organizationId: string,
   permission: 'read' | 'write' | 'admin'
 ): Promise<boolean> {
-  // This would integrate with Clerk's organization permissions
-  // For now, we'll use a simple check
-  const user = await db
+  // Check if user is a member of the organization
+  const membership = await db
     .select()
-    .from(users)
-    .where(eq(users.id, userId))
+    .from(organizationMembers)
+    .where(
+      and(
+        eq(organizationMembers.userId, userId),
+        eq(organizationMembers.organizationId, organizationId)
+      )
+    )
     .limit(1);
 
-  if (user.length === 0) {
+  if (membership.length === 0) {
     return false;
   }
 
-  // In a real implementation, you'd check Clerk organization memberships
-  // and their roles/permissions
-  return true;
+  // Check role-based permissions
+  const role = membership[0].role;
+  
+  if (permission === 'read') {
+    return true; // All members can read
+  }
+  
+  if (permission === 'write') {
+    return role === 'admin' || role === 'member';
+  }
+  
+  if (permission === 'admin') {
+    return role === 'admin' || role === 'owner';
+  }
+
+  return false;
 }

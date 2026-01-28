@@ -1,26 +1,37 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/database/connection';
-import { projects, organizations, githubInstallations } from '@/lib/database/schema';
+import { projects, organizations, githubInstallations, users, organizationMembers } from '@/lib/database/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const { userId, orgId } = await auth();
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!orgId) {
-      return NextResponse.json({ error: 'No organization selected' }, { status: 400 });
+    // Get user's organization membership
+    const [membership] = await db
+      .select({
+        organizationId: organizationMembers.organizationId,
+      })
+      .from(organizationMembers)
+      .innerJoin(users, eq(organizationMembers.userId, users.id))
+      .where(eq(users.email, user.email || ''))
+      .limit(1);
+
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 400 });
     }
 
     // Get organization
     const [organization] = await db
       .select()
       .from(organizations)
-      .where(eq(organizations.clerkOrgId, orgId))
+      .where(eq(organizations.id, membership.organizationId))
       .limit(1);
 
     if (!organization) {
